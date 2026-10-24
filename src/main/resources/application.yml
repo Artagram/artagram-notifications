@@ -1,0 +1,71 @@
+server:
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: artagram-notifications
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://artagram:artagram@localhost:27017/db_notificaciones?authSource=admin}
+      auto-index-creation: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:notifications}
+    password: ${RABBITMQ_PASSWORD:notifications_secret}
+    # Vhost dedicado — todos los demas servicios usan "/", este es el unico
+    # que se conecta a "notifications" (ver artagram-infra: vhost + shovel
+    # que puentea el exchange artagram.events compartido hasta aqui).
+    virtual-host: ${RABBITMQ_VHOST:notifications}
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+
+app:
+  jwt:
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:../artagram-infra/secrets-dev/jwt-public.pem}
+    public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+  rabbitmq:
+    exchange: ${RABBITMQ_EXCHANGE:artagram.events}
+  email:
+    mode: ${EMAIL_MODE:log}
+    from: ${EMAIL_FROM:no-reply@artagram.local}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    mail:
+      # Igual que en artagram-auth: el health-check de JavaMailSender intenta
+      # abrir una conexion SMTP real; en EMAIL_MODE=log (dev) no hay servidor
+      # SMTP configurado y ese intento reportaria la app entera como DOWN.
+      enabled: false
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.artagram: DEBUG
