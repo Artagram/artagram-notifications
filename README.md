@@ -43,9 +43,9 @@ vista simplemente hay mensajes en sus colas `notifications.*`.
 ## Limitación conocida (SSE en memoria)
 
 `NotificacionSseService` guarda los `SseEmitter` en un mapa en memoria de la
-instancia — igual que en `artagram-chat` hoy. Si este servicio escala a más
-de una réplica, un emitter conectado a la instancia A no recibe lo que se
-emite desde la instancia B. El modelo correcto para eso es el que ya usa
+instancia. Si este servicio escala a más de una réplica, un emitter conectado
+a la instancia A no recibe lo que se emite desde la instancia B. El modelo
+correcto para eso es el que ya usa
 `artagram-canvas` (`RealtimeBroadcaster`, relay vía Redis Pub/Sub) — no se
 introduce esa dependencia aquí sin una necesidad concreta de escalar
 horizontalmente.
@@ -100,9 +100,10 @@ RabbitMQ y se olvidan de cómo se entrega.
   conexión abierta y limpiar emitters muertos.
 - Escuchar en RabbitMQ (vhost `notifications`) los eventos `follow.created`,
   `like.created`, `comment.created`, `subscription.updated` (solo si
-  `premium=true`) y `ai.completed`, y por cada uno construir y persistir un
-  `NotificacionDocument` en Mongo, empujándolo por SSE si el destinatario
-  está conectado (`NotificationEventListener`).
+  `premium=true`), `ai.completed` y `personal.message.notification`
+  (publicado por `artagram-chat` al enviarse un mensaje directo), y por cada
+  uno construir y persistir un `NotificacionDocument` en Mongo, empujándolo
+  por SSE si el destinatario está conectado (`NotificationEventListener`).
 - Escuchar `user.verification.requested` (publicado por `artagram-auth`, que
   sigue siendo dueño del token y su expiración) y entregar el email de
   verificación por el canal configurado (`VerificationEmailEventListener`).
@@ -169,6 +170,7 @@ classDiagram
         +onCommentCreated(Map) void
         +onSubscriptionUpdated(Map) void
         +onAiCompleted(Map) void
+        +onPersonalMessageNotification(Map) void
     }
 
     class VerificationEmailEventListener {
@@ -183,6 +185,7 @@ classDiagram
         +QUEUE_SUBSCRIPTION_UPDATED String
         +QUEUE_AI_COMPLETED String
         +QUEUE_VERIFICATION_REQUESTED String
+        +QUEUE_PERSONAL_MESSAGE_NOTIFICATION String
     }
 
     class EmailService {

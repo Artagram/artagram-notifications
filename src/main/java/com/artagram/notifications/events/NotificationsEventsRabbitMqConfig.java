@@ -30,6 +30,7 @@ public class NotificationsEventsRabbitMqConfig {
     public static final String QUEUE_SUBSCRIPTION_UPDATED = "notifications.subscription.updated";
     public static final String QUEUE_AI_COMPLETED = "notifications.ai.completed";
     public static final String QUEUE_VERIFICATION_REQUESTED = "notifications.verification.requested";
+    public static final String QUEUE_PERSONAL_MESSAGE_NOTIFICATION = "notifications.personal.message.notification";
 
     @Bean
     public TopicExchange eventsExchange() {
@@ -117,5 +118,18 @@ public class NotificationsEventsRabbitMqConfig {
     @Bean
     public Binding verificationRequestedBinding(Queue verificationRequestedQueue, TopicExchange eventsExchange) {
         return BindingBuilder.bind(verificationRequestedQueue).to(eventsExchange).with("user.verification.requested");
+    }
+
+    @Bean
+    public Queue personalMessageNotificationQueue() {
+        return QueueBuilder.durable(QUEUE_PERSONAL_MESSAGE_NOTIFICATION)
+                .deadLetterExchange(DLX_EXCHANGE)
+                .deadLetterRoutingKey(QUEUE_PERSONAL_MESSAGE_NOTIFICATION + ".dlq")
+                .build();
+    }
+
+    @Bean
+    public Binding personalMessageNotificationBinding(Queue personalMessageNotificationQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(personalMessageNotificationQueue).to(eventsExchange).with("personal.message.notification");
     }
 }

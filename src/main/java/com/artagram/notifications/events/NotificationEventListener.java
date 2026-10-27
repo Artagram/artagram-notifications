@@ -109,4 +109,27 @@ public class NotificationEventListener {
             log.error("Error consumiendo ai.completed: {}", e.getMessage());
         }
     }
+
+    /**
+     * Portado de ChatPersonalService (artagram-chat): antes emitia esta
+     * notificacion con un SSE propio de chat, inalcanzable para el cliente
+     * porque el gateway ya enruta /api/notificaciones/** solo hacia aqui.
+     */
+    @RabbitListener(queues = NotificationsEventsRabbitMqConfig.QUEUE_PERSONAL_MESSAGE_NOTIFICATION)
+    public void onPersonalMessageNotification(Map<String, Object> payload) {
+        try {
+            UUID destinatarioId = UUID.fromString(String.valueOf(payload.get("destinatarioId")));
+            UUID actorId = UUID.fromString(String.valueOf(payload.get("actorId")));
+            String actorNombre = String.valueOf(payload.getOrDefault("actorNombre", "Un artista"));
+            String referenciaId = String.valueOf(payload.get("referenciaId"));
+            String contenido = String.valueOf(payload.getOrDefault("contenido", ""));
+
+            sseService.emitir(new NotificacionDocument(
+                    UUID.randomUUID(), destinatarioId, "MENSAJE_DIRECTO", actorId,
+                    actorNombre, referenciaId, "Te envió un mensaje: " + contenido
+            ));
+        } catch (Exception e) {
+            log.error("Error consumiendo personal.message.notification: {}", e.getMessage());
+        }
+    }
 }
