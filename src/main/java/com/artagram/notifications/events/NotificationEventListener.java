@@ -110,6 +110,23 @@ public class NotificationEventListener {
         }
     }
 
+    @RabbitListener(queues = NotificationsEventsRabbitMqConfig.QUEUE_POST_MODERATED)
+    public void onPostModerated(Map<String, Object> payload) {
+        try {
+            UUID autorId = UUID.fromString(String.valueOf(payload.get("autorId")));
+            String publicacionId = String.valueOf(payload.get("publicacionId"));
+            String titulo = String.valueOf(payload.getOrDefault("titulo", "tu obra"));
+            String mensaje = "RESTAURADA".equals(payload.get("accion"))
+                    ? "Revisamos \"" + titulo + "\" y ya está visible de nuevo"
+                    : "Ocultamos \"" + titulo + "\" por reportes de la comunidad mientras se revisa";
+            sseService.emitir(new NotificacionDocument(
+                    UUID.randomUUID(), autorId, "OBRA_MODERADA", null, "ArtaGram", publicacionId, mensaje
+            ));
+        } catch (Exception e) {
+            log.error("Error consumiendo post.moderated: {}", e.getMessage());
+        }
+    }
+
     /**
      * Portado de ChatPersonalService (artagram-chat): antes emitia esta
      * notificacion con un SSE propio de chat, inalcanzable para el cliente
