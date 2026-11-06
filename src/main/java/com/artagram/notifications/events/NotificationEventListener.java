@@ -47,12 +47,12 @@ public class NotificationEventListener {
             UUID autorId = UUID.fromString(String.valueOf(payload.get("autorId")));
             UUID usuarioId = UUID.fromString(String.valueOf(payload.get("usuarioId")));
             String usuarioNombre = String.valueOf(payload.getOrDefault("usuarioNombre", "Un artista"));
-            String postId = String.valueOf(payload.get("postId"));
+            String publicacionId = String.valueOf(payload.get("publicacionId"));
 
             if (!autorId.equals(usuarioId)) {
                 sseService.emitir(new NotificacionDocument(
                         UUID.randomUUID(), autorId, "NUEVO_LIKE", usuarioId,
-                        usuarioNombre, postId, "@" + usuarioNombre + " le dio me gusta a tu obra"
+                        usuarioNombre, publicacionId, "@" + usuarioNombre + " le dio me gusta a tu obra"
                 ));
             }
         } catch (Exception e) {
@@ -63,16 +63,16 @@ public class NotificationEventListener {
     @RabbitListener(queues = NotificationsEventsRabbitMqConfig.QUEUE_COMMENT_CREATED)
     public void onCommentCreated(Map<String, Object> payload) {
         try {
-            UUID autorPostId = UUID.fromString(String.valueOf(payload.get("autorPostId")));
+            UUID autorPostId = UUID.fromString(String.valueOf(payload.get("publicacionAutorId")));
             UUID autorComentarioId = UUID.fromString(String.valueOf(payload.get("autorId")));
             String autorNombre = String.valueOf(payload.getOrDefault("autorNombre", "Un artista"));
-            String postId = String.valueOf(payload.get("postId"));
+            String publicacionId = String.valueOf(payload.get("publicacionId"));
             String contenido = String.valueOf(payload.getOrDefault("contenido", ""));
 
             if (!autorPostId.equals(autorComentarioId)) {
                 sseService.emitir(new NotificacionDocument(
                         UUID.randomUUID(), autorPostId, "NUEVO_COMENTARIO", autorComentarioId,
-                        autorNombre, postId, "@" + autorNombre + " comentó: " + contenido
+                        autorNombre, publicacionId, "@" + autorNombre + " comentó: " + contenido
                 ));
             }
         } catch (Exception e) {
@@ -85,12 +85,11 @@ public class NotificationEventListener {
         try {
             UUID usuarioId = UUID.fromString(String.valueOf(payload.get("usuarioId")));
             boolean premium = Boolean.TRUE.equals(payload.get("premium"));
-            if (premium) {
-                sseService.emitir(new NotificacionDocument(
-                        UUID.randomUUID(), usuarioId, "SUSCRIPCION_PREMIUM", null,
-                        "ArtaGram", null, "¡Tu suscripción Premium está activa! Disfruta de historial ilimitado."
-                ));
-            }
+            sseService.emitir(new NotificacionDocument(
+                    UUID.randomUUID(), usuarioId, premium ? "SUSCRIPCION_PREMIUM" : "SUSCRIPCION_VENCIDA", null,
+                    "ArtaGram", null,
+                    premium ? "¡Tu plan PRO está activo!" : "Tu plan PRO venció. Tu cuenta volvió al plan gratuito."
+            ));
         } catch (Exception e) {
             log.error("Error consumiendo subscription.updated: {}", e.getMessage());
         }
@@ -99,11 +98,12 @@ public class NotificationEventListener {
     @RabbitListener(queues = NotificationsEventsRabbitMqConfig.QUEUE_AI_COMPLETED)
     public void onAiCompleted(Map<String, Object> payload) {
         try {
-            UUID solicitanteId = UUID.fromString(String.valueOf(payload.get("solicitanteId")));
-            String postId = payload.get("postId") != null ? String.valueOf(payload.get("postId")) : null;
+            // En este evento autorId es quien pidio el analisis, no siempre el autor de la obra.
+            UUID solicitanteId = UUID.fromString(String.valueOf(payload.get("autorId")));
+            String publicacionId = String.valueOf(payload.get("publicacionId"));
             sseService.emitir(new NotificacionDocument(
                     UUID.randomUUID(), solicitanteId, "ANALISIS_IA_LISTO", null,
-                    "ArtaGram AI", postId, "El análisis técnico de tu obra ya está disponible"
+                    "ArtaGram AI", publicacionId, "El análisis técnico de tu obra ya está disponible"
             ));
         } catch (Exception e) {
             log.error("Error consumiendo ai.completed: {}", e.getMessage());
@@ -142,7 +142,7 @@ public class NotificationEventListener {
             String contenido = String.valueOf(payload.getOrDefault("contenido", ""));
 
             sseService.emitir(new NotificacionDocument(
-                    UUID.randomUUID(), destinatarioId, "MENSAJE_DIRECTO", actorId,
+                    UUID.randomUUID(), destinatarioId, NotificacionDocument.TIPO_MENSAJE, actorId,
                     actorNombre, referenciaId, "Te envió un mensaje: " + contenido
             ));
         } catch (Exception e) {

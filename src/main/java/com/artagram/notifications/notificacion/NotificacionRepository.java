@@ -6,7 +6,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface NotificacionRepository extends MongoRepository<NotificacionDocument, UUID> {
 
-    List<NotificacionDocument> findTop50ByDestinatarioIdOrderByCreadoEnDesc(UUID destinatarioId);
+    List<NotificacionDocument> findTop50ByDestinatarioIdAndTipoNotOrderByCreadoEnDesc(UUID destinatarioId, String tipo);
 
-    long countByDestinatarioIdAndLeidaFalse(UUID destinatarioId);
+    long countByDestinatarioIdAndLeidaFalseAndTipoNot(UUID destinatarioId, String tipo);
+
+    long countByDestinatarioIdAndLeidaFalseAndTipo(UUID destinatarioId, String tipo);
 }

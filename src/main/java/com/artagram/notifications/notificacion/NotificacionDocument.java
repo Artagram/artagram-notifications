@@ -10,6 +10,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @CompoundIndex(name = "idx_dest_creado", def = "{'destinatarioId': 1, 'creadoEn': -1}")
 public class NotificacionDocument {
 
+    public static final String TIPO_MENSAJE = "MENSAJE_DIRECTO";
+
     @Id
     private UUID id;
     private UUID destinatarioId;
