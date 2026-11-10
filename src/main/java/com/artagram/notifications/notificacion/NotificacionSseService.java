@@ -40,7 +40,7 @@ public class NotificacionSseService {
         subscriptores.computeIfAbsent(usuarioId, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
         emitter.onCompletion(() -> remover(usuarioId, emitter));
-        emitter.onTimeout(() -> remover(usuarioId, emitter));
+        emitter.onTimeout(emitter::complete);
         emitter.onError(e -> remover(usuarioId, emitter));
 
         try {

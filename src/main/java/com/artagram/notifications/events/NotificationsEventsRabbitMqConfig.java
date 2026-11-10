@@ -29,7 +29,7 @@ public class NotificationsEventsRabbitMqConfig {
     public static final String QUEUE_COMMENT_CREATED = "notifications.comment.created";
     public static final String QUEUE_SUBSCRIPTION_UPDATED = "notifications.subscription.updated";
     public static final String QUEUE_AI_COMPLETED = "notifications.ai.completed";
-    public static final String QUEUE_VERIFICATION_REQUESTED = "notifications.verification.requested";
+    public static final String QUEUE_POST_MODERATED = "notifications.post.moderated";
     public static final String QUEUE_PERSONAL_MESSAGE_NOTIFICATION = "notifications.personal.message.notification";
 
     @Bean
@@ -108,16 +108,16 @@ public class NotificationsEventsRabbitMqConfig {
     }
 
     @Bean
-    public Queue verificationRequestedQueue() {
-        return QueueBuilder.durable(QUEUE_VERIFICATION_REQUESTED)
+    public Queue postModeratedQueue() {
+        return QueueBuilder.durable(QUEUE_POST_MODERATED)
                 .deadLetterExchange(DLX_EXCHANGE)
-                .deadLetterRoutingKey(QUEUE_VERIFICATION_REQUESTED + ".dlq")
+                .deadLetterRoutingKey(QUEUE_POST_MODERATED + ".dlq")
                 .build();
     }
 
     @Bean
-    public Binding verificationRequestedBinding(Queue verificationRequestedQueue, TopicExchange eventsExchange) {
-        return BindingBuilder.bind(verificationRequestedQueue).to(eventsExchange).with("user.verification.requested");
+    public Binding postModeratedBinding(Queue postModeratedQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(postModeratedQueue).to(eventsExchange).with("post.moderated");
     }
 
     @Bean

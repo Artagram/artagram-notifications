@@ -17,11 +17,6 @@ spring:
     # que se conecta a "notifications" (ver artagram-infra: vhost + shovel
     # que puentea el exchange artagram.events compartido hasta aqui).
     virtual-host: ${RABBITMQ_VHOST:notifications}
-  mail:
-    host: ${SMTP_HOST:localhost}
-    port: ${SMTP_PORT:587}
-    username: ${SMTP_USER:}
-    password: ${SMTP_PASSWORD:}
 
 app:
   jwt:
@@ -31,9 +26,6 @@ app:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
   rabbitmq:
     exchange: ${RABBITMQ_EXCHANGE:artagram.events}
-  email:
-    mode: ${EMAIL_MODE:log}
-    from: ${EMAIL_FROM:no-reply@artagram.local}
 
 springdoc:
   swagger-ui:
@@ -50,12 +42,6 @@ management:
     health:
       probes:
         enabled: true
-  health:
-    mail:
-      # Igual que en artagram-auth: el health-check de JavaMailSender intenta
-      # abrir una conexion SMTP real; en EMAIL_MODE=log (dev) no hay servidor
-      # SMTP configurado y ese intento reportaria la app entera como DOWN.
-      enabled: false
       show-details: always
   prometheus:
     metrics:

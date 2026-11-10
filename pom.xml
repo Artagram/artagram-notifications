@@ -15,7 +15,7 @@
     <artifactId>artagram-notifications</artifactId>
     <version>0.1.0</version>
     <name>artagram-notifications</name>
-    <description>ArtaGram - Microservicio de notificaciones (centro in-app vía SSE + envío de email), consolidado desde artagram-chat y artagram-auth</description>
+    <description>ArtaGram - Microservicio de notificaciones (centro in-app vía SSE), consolidado desde artagram-chat</description>
 
     <properties>
         <java.version>21</java.version>
@@ -44,12 +44,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
-
-        <!-- Envio de email (verificacion de cuenta) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
         <!-- Eventos entre microservicios (vhost dedicado "notifications", puenteado
